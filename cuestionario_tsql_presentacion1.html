@@ -1,0 +1,1226 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cuestionario T-SQL - Final</title>
+  <style>
+    :root {
+      --bg-1: #0a0f14;
+      --bg-2: #0f141a;
+      --panel: #111821;
+      --panel-2: #161f29;
+      --text: #e7edf3;
+      --accent: #57b7d9;
+      --accent-2: #9adcf0;
+      --ok: #6fd18c;
+      --bad: #e56b73;
+      --muted: #8b99a7;
+      --line: #263341;
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: linear-gradient(180deg, var(--bg-1), var(--bg-2));
+      color: var(--text);
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+
+    .app {
+      width: min(900px, 100%);
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+      overflow: hidden;
+    }
+
+    .top {
+      padding: 18px 22px;
+      background: #121a23;
+      color: #fff;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .top h1 {
+      margin: 0 0 6px;
+      font-size: clamp(20px, 2.7vw, 30px);
+      letter-spacing: 0.2px;
+    }
+
+    .top p {
+      margin: 0;
+      opacity: 0.95;
+      font-size: 14px;
+    }
+
+    .meta {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    .chip {
+      background: #0f151c;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 6px 12px;
+      font-size: 13px;
+      color: var(--accent-2);
+    }
+
+    .content {
+      padding: 24px;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-bottom: 18px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--panel-2);
+    }
+
+    .toolbar label {
+      font-size: 14px;
+      color: var(--accent-2);
+      font-weight: 700;
+    }
+
+    .topic-select {
+      min-width: 220px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px;
+      font-size: 14px;
+      background: #0f151c;
+      color: var(--text);
+    }
+
+    .topic-select:focus {
+      outline: 1px solid rgba(154, 220, 240, 0.5);
+      outline-offset: 1px;
+    }
+
+    .question-title {
+      margin: 0 0 8px;
+      font-size: clamp(18px, 2.2vw, 24px);
+      color: var(--accent-2);
+    }
+
+    .question-statement {
+      margin: 0 0 16px;
+      line-height: 1.5;
+      font-size: 16px;
+    }
+
+    .code {
+      background: #0c1218;
+      color: #d9f6ff;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      padding: 14px;
+      margin: 10px 0 18px;
+      overflow-x: auto;
+      font-family: Consolas, Monaco, "Courier New", monospace;
+      font-size: 14px;
+      line-height: 1.55;
+      white-space: pre;
+    }
+
+    .options {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .option {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px 12px;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      transition: border-color 0.2s ease, background 0.2s ease;
+      background: #0f151c;
+    }
+
+    .option:hover {
+      border-color: rgba(154, 220, 240, 0.35);
+      background: #121b24;
+    }
+
+    .option input {
+      margin-top: 3px;
+    }
+
+    .text-answer {
+      width: 100%;
+      padding: 12px 12px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      font-size: 15px;
+      margin-bottom: 18px;
+      background: #0f151c;
+      color: var(--text);
+    }
+
+    .text-answer::placeholder {
+      color: #6f879a;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: none;
+      border-radius: 10px;
+      padding: 11px 16px;
+      font-size: 14px;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .btn-primary {
+      background: #2d8fb0;
+      color: #fff;
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .btn-secondary {
+      background: #18212b;
+      color: var(--accent-2);
+      border: 1px solid var(--line);
+    }
+
+    .feedback {
+      margin-top: 16px;
+      border-radius: 12px;
+      padding: 14px;
+      border: 1px solid;
+      line-height: 1.5;
+      background: #0f151c;
+    }
+
+    .feedback.ok {
+      color: var(--ok);
+      background: rgba(43, 214, 123, 0.08);
+      border-color: rgba(43, 214, 123, 0.28);
+    }
+
+    .feedback.bad {
+      color: var(--bad);
+      background: rgba(255, 107, 107, 0.08);
+      border-color: rgba(255, 107, 107, 0.28);
+    }
+
+    .feedback strong {
+      display: block;
+      margin-bottom: 3px;
+    }
+
+    .result {
+      text-align: center;
+      padding: 10px 0 2px;
+    }
+
+    .result h2 {
+      margin: 0 0 8px;
+      font-size: 30px;
+      color: var(--accent-2);
+    }
+
+    .result p {
+      margin: 0 0 10px;
+      font-size: 17px;
+    }
+
+    .footer-note {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 10px;
+      padding: 5px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      color: var(--accent-2);
+      background: #0f151c;
+      font-size: 12px;
+      letter-spacing: 0.2px;
+      text-transform: uppercase;
+    }
+
+    @media (max-width: 700px) {
+      body {
+        padding: 12px;
+      }
+
+      .content {
+        padding: 16px;
+      }
+
+      .chip {
+        font-size: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="top">
+      <h1>Cuestionario T-SQL (Presentaciones 1, 2 y 3)</h1>
+      <p>Temas: variables, lotes, control de flujo, funciones integradas y funciones UDF (formato corto: identificar error y completar).</p>
+      <div class="meta">
+        <span class="chip" id="progressChip">Pregunta 1 de 1</span>
+        <span class="chip" id="scoreChip">Puntaje: 0</span>
+        <span class="chip">Feedback inmediato</span>
+      </div>
+    </header>
+
+    <section class="content">
+      <div class="toolbar">
+        <label for="topicSelect">Presentacion:</label>
+        <select id="topicSelect" class="topic-select"></select>
+        <label for="typeSelect">Tipo:</label>
+        <select id="typeSelect" class="topic-select">
+          <option value="Todos">Todos</option>
+          <option value="Teoria">Teoria</option>
+          <option value="Ejercicios">Ejercicios</option>
+        </select>
+        <button id="applyTopicBtn" class="btn-secondary" type="button">Aplicar filtro</button>
+        <button id="shuffleBtn" class="btn-secondary" type="button">Mezclar preguntas</button>
+        <button id="resetAllBtn" class="btn-secondary" type="button">Restablecer todo</button>
+      </div>
+      <section id="quizContainer"></section>
+    </section>
+  </main>
+
+  <script>
+    const allQuestions = [
+      {
+        type: "mcq",
+        topic: "Variables",
+        statement: "En T-SQL, una variable declarada con DECLARE dentro de un lote se usa principalmente para:",
+        options: [
+          "Guardar configuracion global del servidor",
+          "Almacenar datos temporales durante la ejecucion",
+          "Crear tablas permanentes",
+          "Ejecutar backups automaticos"
+        ],
+        answer: "Almacenar datos temporales durante la ejecucion",
+        explanation: "Las variables en T-SQL son almacenamiento temporal dentro de un batch o lote."
+      },
+      {
+        type: "fill",
+        topic: "Variables",
+        statement: "Completa la palabra clave para declarar una variable en T-SQL:",
+        code: "_____ @MiVariable INT = 10;",
+        answer: "DECLARE",
+        explanation: "La sintaxis de declaracion comienza con DECLARE."
+      },
+      {
+        type: "tf",
+        topic: "Variables",
+        statement: "Verdadero o Falso: una variable local declarada antes de GO puede usarse despues de GO.",
+        options: ["Verdadero", "Falso"],
+        answer: "Falso",
+        explanation: "GO termina el lote, y el ambito de la variable no cruza al siguiente lote."
+      },
+      {
+        type: "mcq",
+        topic: "Batches",
+        statement: "¿Que describe mejor a GO en SQL Server?",
+        options: [
+          "Una instruccion SQL estandar universal",
+          "Un separador de lotes usado por herramientas de Microsoft",
+          "Una funcion para saltar a una etiqueta",
+          "Un tipo de dato"
+        ],
+        answer: "Un separador de lotes usado por herramientas de Microsoft",
+        explanation: "GO no es una instruccion SQL estandar; es procesada por herramientas como SSMS."
+      },
+      {
+        type: "tf",
+        topic: "Batches",
+        statement: "Verdadero o Falso: el punto y coma (;) termina una declaracion individual y GO termina un lote completo.",
+        options: ["Verdadero", "Falso"],
+        answer: "Verdadero",
+        explanation: "Esta fue una comparacion central en la presentacion de GO vs ;."
+      },
+      {
+        type: "fill",
+        topic: "Batches",
+        statement: "Completa: No puedes poner GO dentro de una cadena SQL enviada por ADO.NET porque el motor SQL no lo ____.",
+        answer: "comprende",
+        explanation: "GO lo interpreta la herramienta cliente, no el motor como tal."
+      },
+      {
+        type: "mcq",
+        topic: "Control de flujo",
+        statement: "La estructura BEGIN...END en T-SQL se usa para:",
+        options: [
+          "Crear indices",
+          "Delimitar un bloque de instrucciones como una unidad",
+          "Cambiar tipo de datos",
+          "Cerrar una conexion"
+        ],
+        answer: "Delimitar un bloque de instrucciones como una unidad",
+        explanation: "BEGIN y END permiten tratar multiples sentencias como un bloque logico."
+      },
+      {
+        type: "mcq",
+        topic: "Control de flujo",
+        statement: "¿Cuando se ejecuta el bloque ELSE en IF...ELSE?",
+        options: [
+          "Cuando la condicion IF es TRUE",
+          "Siempre despues de IF",
+          "Cuando la condicion IF es FALSE",
+          "Solo dentro de WHILE"
+        ],
+        answer: "Cuando la condicion IF es FALSE",
+        explanation: "ELSE cubre el camino alternativo cuando IF no se cumple."
+      },
+      {
+        type: "tf",
+        topic: "Control de flujo",
+        statement: "Verdadero o Falso: CASE evalua condiciones y devuelve el resultado de la primera condicion verdadera.",
+        options: ["Verdadero", "Falso"],
+        answer: "Verdadero",
+        explanation: "CASE retorna el primer resultado que cumpla un WHEN verdadero."
+      },
+      {
+        type: "mcq",
+        topic: "Control de flujo",
+        statement: "Dentro de un bucle WHILE, BREAK y CONTINUE sirven para:",
+        options: [
+          "Salir del script completo en todos los casos",
+          "Controlar el flujo del bucle actual",
+          "Crear etiquetas para GOTO",
+          "Definir transacciones"
+        ],
+        answer: "Controlar el flujo del bucle actual",
+        explanation: "BREAK sale del bucle, CONTINUE pasa a la siguiente iteracion."
+      },
+      {
+        type: "fill",
+        topic: "Control de flujo",
+        statement: "Completa: La instruccion que sale incondicionalmente de una consulta o procedimiento es ____.",
+        answer: "RETURN",
+        explanation: "RETURN finaliza de inmediato y puede devolver una expresion entera."
+      },
+      {
+        type: "tf",
+        topic: "Control de flujo",
+        statement: "Verdadero o Falso: GOTO altera el flujo hacia una etiqueta y puede anidarse en procedimientos o lotes.",
+        options: ["Verdadero", "Falso"],
+        answer: "Verdadero",
+        explanation: "GOTO dirige la ejecucion a una etiqueta declarada."
+      },
+      {
+        type: "mcq",
+        topic: "Manejo de errores",
+        statement: "TRY...CATCH en T-SQL permite:",
+        options: [
+          "Ignorar cualquier error sin reportar",
+          "Capturar y manejar errores de forma controlada",
+          "Convertir GO en ;",
+          "Declarar variables globales"
+        ],
+        answer: "Capturar y manejar errores de forma controlada",
+        explanation: "TRY encierra codigo riesgoso y CATCH maneja errores sin detener todo el script."
+      },
+      {
+        type: "mcq",
+        topic: "Manejo de errores",
+        statement: "La instruccion THROW se utiliza para:",
+        options: [
+          "Definir una tabla temporal",
+          "Generar o relanzar errores explicitamente",
+          "Reiniciar un WHILE",
+          "Cerrar un lote"
+        ],
+        answer: "Generar o relanzar errores explicitamente",
+        explanation: "THROW permite lanzar una excepcion nueva o volver a lanzar una capturada."
+      },
+      {
+        type: "fill",
+        topic: "Sintaxis",
+        statement: "Completa el nombre de instruccion: en T-SQL, para asignar un valor a una variable ya declarada se usa ____.",
+        answer: "SET",
+        explanation: "SET @NombreVariable = Valor es la forma habitual de asignacion."
+      },
+
+      {
+        type: "mcq",
+        topic: "Funciones - Conceptos",
+        statement: "En SQL Server, una funcion determinista es la que:",
+        options: [
+          "Siempre devuelve resultados distintos",
+          "Devuelve siempre el mismo resultado con la misma entrada",
+          "Solo funciona en procedimientos almacenados",
+          "Nunca acepta parametros"
+        ],
+        answer: "Devuelve siempre el mismo resultado con la misma entrada",
+        explanation: "Las deterministas producen salidas estables para la misma entrada."
+      },
+      {
+        type: "tf",
+        topic: "Funciones - Determinismo",
+        statement: "Verdadero o Falso: GETDATE() se considera una funcion no determinista.",
+        options: ["Verdadero", "Falso"],
+        answer: "Verdadero",
+        explanation: "GETDATE() cambia con el tiempo y puede devolver un valor distinto en cada llamada."
+      },
+      {
+        type: "mcq",
+        topic: "Funciones de Agregacion",
+        statement: "¿Que diferencia clave hay entre COUNT(*) y COUNT(Columna)?",
+        options: [
+          "COUNT(*) ignora nulos y COUNT(columna) no",
+          "COUNT(*) cuenta filas; COUNT(columna) cuenta valores no nulos",
+          "COUNT(columna) solo funciona con enteros",
+          "No existe diferencia"
+        ],
+        answer: "COUNT(*) cuenta filas; COUNT(columna) cuenta valores no nulos",
+        explanation: "COUNT(*) cuenta todas las filas del conjunto; COUNT(columna) omite NULL."
+      },
+      {
+        type: "fill",
+        topic: "Funciones de Agregacion",
+        statement: "Completa la funcion que calcula el promedio: ____ (Score).",
+        answer: "AVG",
+        explanation: "AVG devuelve el valor promedio de una expresion numerica."
+      },
+      {
+        type: "mcq",
+        topic: "Funciones de Cadena",
+        statement: "¿Que funcion devuelve la longitud de una cadena?",
+        options: ["TRIM", "LEN", "REPLACE", "CHARINDEX"],
+        answer: "LEN",
+        explanation: "LEN('SQL Server') devuelve el numero de caracteres."
+      },
+      {
+        type: "mcq",
+        topic: "Funciones de Cadena",
+        statement: "Si aplicas TRIM(' Hola '), el resultado es:",
+        options: ["' Hola'", "'Hola '", "'Hola'", "'  Hola  '"],
+        answer: "'Hola'",
+        explanation: "TRIM elimina espacios al inicio y al final."
+      },
+      {
+        type: "fill",
+        topic: "Funciones de Cadena",
+        statement: "Completa la funcion que busca la posicion de un texto dentro de otro: ____('s', 'Test').",
+        answer: "CHARINDEX",
+        explanation: "CHARINDEX retorna la posicion inicial de la coincidencia."
+      },
+      {
+        type: "mcq",
+        topic: "Funciones Logicas",
+        statement: "IIF(condicion, valor_true, valor_false) devuelve:",
+        options: [
+          "Solo TRUE o FALSE",
+          "valor_true o valor_false segun la condicion",
+          "Siempre un numero entero",
+          "Una tabla temporal"
+        ],
+        answer: "valor_true o valor_false segun la condicion",
+        explanation: "IIF evalua una condicion y retorna uno de dos resultados."
+      },
+      {
+        type: "mcq",
+        topic: "Funciones Logicas",
+        statement: "COALESCE(NULL, NULL, 'Valor') devuelve:",
+        options: ["NULL", "'Valor'", "Error", "0"],
+        answer: "'Valor'",
+        explanation: "COALESCE retorna el primer valor no nulo."
+      },
+      {
+        type: "tf",
+        topic: "Funciones de Fecha y Hora",
+        statement: "Verdadero o Falso: SYSDATETIME() ofrece mas precision que GETDATE().",
+        options: ["Verdadero", "Falso"],
+        answer: "Verdadero",
+        explanation: "SYSDATETIME maneja precision mayor (fracciones con mas digitos)."
+      },
+      {
+        type: "mcq",
+        topic: "Funciones de Fecha y Hora",
+        statement: "¿Que funcion devuelve la fecha y hora en UTC?",
+        options: ["GETDATE()", "SYSDATETIME()", "GETUTCDATE()", "EOMONTH()"],
+        answer: "GETUTCDATE()",
+        explanation: "GETUTCDATE() retorna la hora universal coordinada."
+      },
+      {
+        type: "fill",
+        topic: "Funciones de Fecha y Hora",
+        statement: "Completa: para construir una fecha con partes (anio, mes, dia) se usa ____.",
+        answer: "DATEFROMPARTS",
+        acceptedAnswers: ["DATEFROMPARTS()"],
+        explanation: "DATEFROMPARTS(2024,12,31) produce una fecha valida con partes individuales."
+      },
+      {
+        type: "mcq",
+        topic: "Funciones de Fecha y Hora",
+        statement: "DATEPART(MONTH, '2023-10-25') devuelve:",
+        options: ["25", "10", "2023", "October"],
+        answer: "10",
+        explanation: "DATEPART con MONTH retorna el numero de mes."
+      },
+      {
+        type: "mcq",
+        topic: "Funciones de Fecha y Hora",
+        statement: "DATETRUNC(HOUR, '2023-10-25 14:35:55') devuelve una fecha/hora con:",
+        options: [
+          "Minutos y segundos preservados",
+          "Segundos en cero, minutos intactos",
+          "Minutos y segundos truncados a cero",
+          "Solo la fecha sin hora"
+        ],
+        answer: "Minutos y segundos truncados a cero",
+        explanation: "Al truncar a hora, se elimina precision inferior (minutos/segundos)."
+      },
+      {
+        type: "fill",
+        topic: "Funciones de Fecha y Hora",
+        statement: "Completa: para obtener el fin de mes de una fecha se usa ____.",
+        answer: "EOMONTH",
+        acceptedAnswers: ["EOMONTH()"],
+        explanation: "EOMONTH('2024-02-05') devuelve '2024-02-29'."
+      },
+      {
+        type: "mcq",
+        topic: "Funciones de Conversion",
+        statement: "¿Que funcion intenta convertir y devuelve NULL en lugar de error si falla?",
+        options: ["CAST", "CONVERT", "TRY_PARSE", "DATEADD"],
+        answer: "TRY_PARSE",
+        explanation: "TRY_PARSE es conversion segura con salida NULL en errores."
+      },
+      {
+        type: "tf",
+        topic: "Funciones del Sistema",
+        statement: "Verdadero o Falso: ISNULL(Columna, 0) reemplaza NULL por 0.",
+        options: ["Verdadero", "Falso"],
+        answer: "Verdadero",
+        explanation: "ISNULL reemplaza valores nulos por el valor alternativo indicado."
+      },
+      {
+        type: "mcq",
+        topic: "Funciones del Sistema",
+        statement: "¿Que devuelve @@ROWCOUNT justo despues de un UPDATE?",
+        options: [
+          "El total de filas de la tabla",
+          "La cantidad de filas afectadas por la ultima sentencia",
+          "El ultimo ID insertado",
+          "La hora del sistema"
+        ],
+        answer: "La cantidad de filas afectadas por la ultima sentencia",
+        explanation: "@@ROWCOUNT guarda cuantas filas afecto la ultima instruccion."
+      },
+      {
+        type: "fill",
+        topic: "Funciones del Sistema",
+        statement: "Completa la funcion que genera un GUID unico: ____().",
+        answer: "NEWID",
+        acceptedAnswers: ["NEWID()"],
+        explanation: "NEWID devuelve un identificador unico global."
+      },
+      {
+        type: "mcq",
+        topic: "Ranking (Window Functions)",
+        statement: "¿Que funcion asigna numeros secuenciales sin considerar empates?",
+        options: ["RANK()", "DENSE_RANK()", "ROW_NUMBER()", "NTILE()"],
+        answer: "ROW_NUMBER()",
+        explanation: "ROW_NUMBER asigna secuencia unica a cada fila."
+      },
+      {
+        type: "mcq",
+        topic: "Ranking (Window Functions)",
+        statement: "Si hay empate en posiciones, la funcion que deja saltos de ranking es:",
+        options: ["ROW_NUMBER()", "RANK()", "DENSE_RANK()", "COUNT()"],
+        answer: "RANK()",
+        explanation: "RANK genera huecos tras empates; DENSE_RANK no deja huecos."
+      },
+      {
+        type: "fill",
+        topic: "Ranking (Window Functions)",
+        statement: "Completa la clausula de ventana minima: RANK() OVER (____ BY Monto DESC).",
+        answer: "ORDER",
+        explanation: "Las funciones de ranking se basan en OVER (ORDER BY ...)."
+      },
+
+      {
+        type: "mcq",
+        topic: "UDF - Conceptos",
+        statement: "Una UDF (funcion definida por el usuario) en SQL Server se usa para:",
+        options: [
+          "Encapsular logica reutilizable que devuelve un valor o tabla",
+          "Reemplazar siempre a los procedimientos almacenados",
+          "Crear indices automaticamente",
+          "Administrar permisos de seguridad"
+        ],
+        answer: "Encapsular logica reutilizable que devuelve un valor o tabla",
+        explanation: "Las UDF encapsulan logica y generan un resultado predecible."
+      },
+      {
+        type: "mcq",
+        topic: "UDF - Tipos",
+        statement: "Segun la taxonomia vista, los tres tipos principales de UDF son:",
+        options: [
+          "Escalar, Inline TVF y Multi-statement TVF",
+          "IF, WHILE y CASE",
+          "GETDATE, DATEADD y DATEDIFF",
+          "JOIN, GROUP BY y HAVING"
+        ],
+        answer: "Escalar, Inline TVF y Multi-statement TVF",
+        explanation: "La presentacion distingue funciones escalares y dos variantes tabulares."
+      },
+      {
+        type: "tf",
+        topic: "UDF Escalar",
+        statement: "Verdadero o Falso: una funcion escalar devuelve un unico valor.",
+        options: ["Verdadero", "Falso"],
+        answer: "Verdadero",
+        explanation: "Las funciones escalares retornan un solo dato (INT, VARCHAR, etc.)."
+      },
+      {
+        type: "fill",
+        topic: "UDF Escalar",
+        statement: "Completa: en una UDF escalar, la clausula de retorno de tipo suele verse como RETURNS ____.",
+        answer: "INT",
+        acceptedAnswers: ["datatype", "tipo de dato", "un tipo de dato"],
+        explanation: "En una escalar se define RETURNS con un tipo de dato, por ejemplo INT."
+      },
+      {
+        type: "mcq",
+        topic: "UDF Escalar",
+        statement: "Para invocar una funcion escalar de usuario en los ejemplos, se usa el prefijo:",
+        options: ["tempdb.", "dbo.", "sys.", "master."],
+        answer: "dbo.",
+        explanation: "En la invocacion se resalta el uso de esquema, por ejemplo dbo.MiFuncion()."
+      },
+      {
+        type: "mcq",
+        topic: "UDF Escalar - Codigo Analitico",
+        statement: "Analiza el codigo y elige la salida correcta.",
+        code: "CREATE FUNCTION dbo.Calcular_Pitagoras (@cateto_a FLOAT, @cateto_b FLOAT)\nRETURNS FLOAT\nAS\nBEGIN\n  DECLARE @hipotenusa FLOAT;\n  SET @hipotenusa = SQRT(POWER(@cateto_a, 2) + POWER(@cateto_b, 2));\n  RETURN @hipotenusa;\nEND;\n\nSELECT dbo.Calcular_Pitagoras(6, 8) AS H;",
+        options: ["10", "12", "14", "8"],
+        answer: "10",
+        explanation: "Por Pitagoras, sqrt(6^2 + 8^2) = sqrt(100) = 10."
+      },
+      {
+        type: "mcq",
+        topic: "UDF Inline TVF",
+        statement: "¿Cual es una caracteristica propia de una Inline TVF?",
+        options: [
+          "Usa BEGIN...END obligatorio con multiples INSERT",
+          "Devuelve una tabla mediante un unico RETURN (SELECT ...)",
+          "Solo puede devolver un valor entero",
+          "No acepta parametros"
+        ],
+        answer: "Devuelve una tabla mediante un unico RETURN (SELECT ...)",
+        explanation: "Inline TVF retorna directamente el SELECT dentro de RETURN."
+      },
+      {
+        type: "tf",
+        topic: "UDF Inline TVF",
+        statement: "Verdadero o Falso: en una Inline TVF no se utiliza un bloque BEGIN...END con logica intermedia.",
+        options: ["Verdadero", "Falso"],
+        answer: "Verdadero",
+        explanation: "Su sintaxis es compacta: AS RETURN (SELECT ...)."
+      },
+      {
+        type: "mcq",
+        topic: "UDF Inline TVF - Codigo Analitico",
+        statement: "Analiza la consulta y marca la opcion correcta.",
+        code: "SELECT BusinessEntityID, VacationHours\nFROM Mostrar_Empleados_HorasVacaciones(50)\nORDER BY VacationHours DESC;",
+        options: [
+          "Invoca una funcion escalar",
+          "Invoca una funcion tabular y ordena sus filas",
+          "Crea la funcion por primera vez",
+          "Actualiza VacationHours"
+        ],
+        answer: "Invoca una funcion tabular y ordena sus filas",
+        explanation: "La funcion se usa en FROM, por eso devuelve conjunto de filas."
+      },
+      {
+        type: "mcq",
+        topic: "UDF Multi-statement TVF",
+        statement: "¿Que elemento distingue a una funcion de tabla de multiples declaraciones?",
+        options: [
+          "Solo permite un RETURN con SELECT directo",
+          "Declara una variable TABLE y la llena con INSERT",
+          "No permite parametros",
+          "No puede usar BEGIN...END"
+        ],
+        answer: "Declara una variable TABLE y la llena con INSERT",
+        explanation: "Este tipo crea una tabla variable de salida y luego retorna esa tabla."
+      },
+      {
+        type: "fill",
+        topic: "UDF Multi-statement TVF",
+        statement: "Completa: en este tipo de UDF, el retorno suele escribirse como RETURNS @Lista ____.",
+        answer: "TABLE",
+        explanation: "Se define una tabla variable de salida: RETURNS @Nombre TABLE (...)."
+      },
+      {
+        type: "tf",
+        topic: "UDF Multi-statement TVF",
+        statement: "Verdadero o Falso: en una Multi-statement TVF, RETURN suele ser implicito sin parametros al final.",
+        options: ["Verdadero", "Falso"],
+        answer: "Verdadero",
+        explanation: "Tras insertar en la tabla variable, se hace RETURN; para devolverla."
+      },
+      {
+        type: "mcq",
+        topic: "UDF - Codigo Analitico",
+        statement: "Analiza el fragmento y marca la afirmacion correcta.",
+        code: "CREATE OR ALTER FUNCTION Lista_Empleados_HorasVacaciones(@hora SMALLINT)\nRETURNS @Lista TABLE (BusinessEntityID INT, JobTitle NVARCHAR(50), HireDate DATE, VacationHours SMALLINT)\nAS\nBEGIN\n  INSERT INTO @Lista\n  SELECT BusinessEntityID, JobTitle, HireDate, VacationHours\n  FROM HumanResources.Employee\n  WHERE VacationHours <= @hora;\n\n  RETURN;\nEND;",
+        options: [
+          "Es una funcion escalar",
+          "Es una Inline TVF",
+          "Es una Multi-statement TVF",
+          "Es un procedimiento almacenado"
+        ],
+        answer: "Es una Multi-statement TVF",
+        explanation: "Usa RETURNS @Lista TABLE + BEGIN...END + INSERT INTO @Lista + RETURN;"
+      },
+      {
+        type: "mcq",
+        topic: "UDF - Matriz de Decision",
+        statement: "Si necesitas maximo rendimiento en consultas y logica simple de retorno tabular, conviene elegir:",
+        options: ["Funcion escalar", "Inline TVF", "Multi-statement TVF", "TRY...CATCH"],
+        answer: "Inline TVF",
+        explanation: "La matriz final recomienda Inline TVF para consultas optimizadas."
+      },
+      {
+        type: "mcq",
+        topic: "UDF - Matriz de Decision",
+        statement: "Si la logica requiere pasos intermedios complejos y varios SELECT/INSERT, conviene:",
+        options: ["Inline TVF", "Funcion escalar", "Multi-statement TVF", "Vista indexada"],
+        answer: "Multi-statement TVF",
+        explanation: "Se usa cuando necesitas flujo intermedio y carga de tabla variable."
+      },
+
+      {
+        type: "mcq",
+        topic: "Codigo Analitico - Identificar Error",
+        statement: "Identifica el error principal.",
+        code: "DECLARE @x INT = 10\nPRINT @x\nSET @x = @x + 1",
+        options: [
+          "Falta GO entre lineas",
+          "No hay error sintactico obligatorio en ese bloque",
+          "PRINT no acepta variables",
+          "SET no puede usarse con INT"
+        ],
+        answer: "No hay error sintactico obligatorio en ese bloque",
+        explanation: "Ese bloque es valido como lote T-SQL basico."
+      },
+      {
+        type: "mcq",
+        topic: "Codigo Analitico - Identificar Error",
+        statement: "¿Que linea presenta error conceptual para una variable local?",
+        code: "DECLARE @contador INT = 1\nGO\nSET @contador = @contador + 1",
+        options: [
+          "Linea 1",
+          "Linea 2",
+          "Linea 3",
+          "Ninguna"
+        ],
+        answer: "Linea 3",
+        explanation: "Tras GO, la variable declarada en el lote anterior ya no existe."
+      },
+      {
+        type: "fill",
+        topic: "Codigo Analitico - Completar",
+        statement: "Completa la palabra faltante para que el IF tenga alternativa.",
+        code: "IF @edad >= 18\n  PRINT 'Mayor';\n_____\n  PRINT 'Menor';",
+        answer: "ELSE",
+        explanation: "ELSE define el camino alternativo cuando IF es falso."
+      },
+      {
+        type: "fill",
+        topic: "Codigo Analitico - Completar",
+        statement: "Completa la funcion de agregacion que falta.",
+        code: "SELECT _____(Salary) AS Promedio\nFROM Empleados;",
+        answer: "AVG",
+        explanation: "AVG calcula el promedio sobre el conjunto."
+      },
+      {
+        type: "mcq",
+        topic: "Codigo Analitico - Identificar Error",
+        statement: "Analiza y elige el problema principal.",
+        code: "SELECT DATEPART('MONTH', '2023-10-25') AS Mes;",
+        options: [
+          "DATEPART siempre requiere 3 parametros",
+          "El datepart debe ir como identificador, no cadena",
+          "La fecha debe ir sin comillas",
+          "AS Mes no es valido"
+        ],
+        answer: "El datepart debe ir como identificador, no cadena",
+        explanation: "La forma habitual es DATEPART(MONTH, '2023-10-25')."
+      },
+      {
+        type: "mcq",
+        topic: "Codigo Analitico - UDF",
+        statement: "¿Que le falta a esta UDF escalar para devolver el valor esperado?",
+        code: "CREATE FUNCTION dbo.Doble(@n INT)\nRETURNS INT\nAS\nBEGIN\n  DECLARE @r INT;\n  SET @r = @n * 2;\nEND;",
+        options: [
+          "Falta RETURN @r;",
+          "Falta ORDER BY",
+          "Falta GO dentro de la funcion",
+          "Falta GROUP BY"
+        ],
+        answer: "Falta RETURN @r;",
+        explanation: "En UDF escalar debes retornar explicitamente el valor final."
+      },
+      {
+        type: "mcq",
+        topic: "Codigo Analitico - UDF",
+        statement: "Marca la opcion correcta para completar una Inline TVF.",
+        code: "CREATE FUNCTION dbo.Emps(@h SMALLINT)\nRETURNS TABLE\nAS\n_____\n(\n  SELECT BusinessEntityID\n  FROM HumanResources.Employee\n  WHERE VacationHours <= @h\n);",
+        options: ["BEGIN", "SELECT", "RETURN", "DECLARE"],
+        answer: "RETURN",
+        explanation: "Inline TVF usa AS RETURN (SELECT ...)."
+      },
+      {
+        type: "tf",
+        topic: "Codigo Analitico - UDF",
+        statement: "Verdadero o Falso: una funcion RETURNS @T TABLE (...) suele insertar datos en @T y luego ejecutar RETURN;.",
+        options: ["Verdadero", "Falso"],
+        answer: "Verdadero",
+        explanation: "Ese patron corresponde a una Multi-statement TVF."
+      },
+      {
+        type: "fill",
+        topic: "Codigo Analitico - Completar",
+        statement: "Completa: para evitar error al convertir texto a entero, usa ____('Texto' AS INT).",
+        answer: "TRY_PARSE",
+        acceptedAnswers: ["TRY_CONVERT"],
+        explanation: "TRY_PARSE o TRY_CONVERT son variantes seguras que devuelven NULL al fallar."
+      }
+    ];
+
+    let activeQuestions = [...allQuestions];
+    let current = 0;
+    let score = 0;
+    let answered = false;
+    let currentTopic = "Todas";
+
+    const quizContainer = document.getElementById("quizContainer");
+    const progressChip = document.getElementById("progressChip");
+    const scoreChip = document.getElementById("scoreChip");
+    const topicSelect = document.getElementById("topicSelect");
+    const typeSelect = document.getElementById("typeSelect");
+    const applyTopicBtn = document.getElementById("applyTopicBtn");
+    const shuffleBtn = document.getElementById("shuffleBtn");
+    const resetAllBtn = document.getElementById("resetAllBtn");
+
+    function normalize(text) {
+      return String(text || "")
+        .trim()
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+    }
+
+    function renderQuestion() {
+      const q = activeQuestions[current];
+      answered = false;
+      progressChip.textContent = `Pregunta ${current + 1} de ${activeQuestions.length}`;
+      scoreChip.textContent = `Puntaje: ${score}`;
+      const presentationLabel = getPresentationByTopic(q.topic);
+
+      let optionsHTML = "";
+      if (q.type === "mcq" || q.type === "tf") {
+        optionsHTML = `
+          <div class="options">
+            ${q.options.map((opt, idx) => `
+              <label class="option">
+                <input type="radio" name="answer" value="${escapeHTML(opt)}">
+                <span><strong>${String.fromCharCode(65 + idx)}.</strong> ${escapeHTML(opt)}</span>
+              </label>
+            `).join("")}
+          </div>
+        `;
+      } else {
+        optionsHTML = `<input id="textAnswer" class="text-answer" type="text" placeholder="Escribe tu respuesta aqui...">`;
+      }
+
+      quizContainer.innerHTML = `
+        <div class="tag">${escapeHTML(presentationLabel)} · ${escapeHTML(isExerciseQuestion(q) ? "Ejercicio" : "Teoria")}</div>
+        <h2 class="question-title">${q.topic}</h2>
+        <p class="question-statement">${q.statement}</p>
+        ${q.code ? `<div class="code">${escapeHTML(q.code)}</div>` : ""}
+        ${optionsHTML}
+        <div class="actions">
+          <button id="checkBtn" class="btn-primary">Comprobar respuesta</button>
+          <button id="nextBtn" class="btn-secondary" disabled>Siguiente pregunta</button>
+        </div>
+        <div id="feedbackWrap"></div>
+      `;
+
+      document.getElementById("checkBtn").addEventListener("click", checkAnswer);
+      document.getElementById("nextBtn").addEventListener("click", nextQuestion);
+    }
+
+    function checkAnswer() {
+      if (answered) return;
+
+      const q = activeQuestions[current];
+      let userAnswer = "";
+
+      if (q.type === "mcq" || q.type === "tf") {
+        const selected = document.querySelector("input[name='answer']:checked");
+        if (!selected) {
+          showFeedback(false, "Selecciona una opcion antes de comprobar.", q.answer, q.explanation, true);
+          return;
+        }
+        userAnswer = selected.value;
+      } else {
+        const input = document.getElementById("textAnswer");
+        userAnswer = input.value;
+        if (!normalize(userAnswer)) {
+          showFeedback(false, "Escribe una respuesta antes de comprobar.", q.answer, q.explanation, true);
+          return;
+        }
+      }
+
+      const acceptedAnswers = [q.answer, ...(q.acceptedAnswers || [])].map((item) => normalize(item));
+      const isCorrect = acceptedAnswers.includes(normalize(userAnswer));
+      if (isCorrect) score += 1;
+
+      answered = true;
+      document.getElementById("checkBtn").disabled = true;
+      document.getElementById("nextBtn").disabled = false;
+      scoreChip.textContent = `Puntaje: ${score}`;
+
+      showFeedback(
+        isCorrect,
+        isCorrect ? "Respuesta correcta." : "Respuesta incorrecta.",
+        q.answer,
+        q.explanation,
+        false
+      );
+    }
+
+    function showFeedback(ok, title, correct, explanation, warningOnly) {
+      const wrap = document.getElementById("feedbackWrap");
+      wrap.innerHTML = `
+        <div class="feedback ${ok ? "ok" : "bad"}">
+          <strong>${title}</strong>
+          ${warningOnly ? "" : `<div><b>Respuesta correcta:</b> ${escapeHTML(correct)}</div>`}
+          <div>${escapeHTML(explanation)}</div>
+        </div>
+      `;
+    }
+
+    function nextQuestion() {
+      if (!answered) return;
+      current += 1;
+      if (current >= activeQuestions.length) {
+        showResult();
+        return;
+      }
+      renderQuestion();
+    }
+
+    function showResult() {
+      const pct = activeQuestions.length === 0 ? 0 : Math.round((score / activeQuestions.length) * 100);
+      progressChip.textContent = "Cuestionario completado";
+      scoreChip.textContent = `Puntaje final: ${score}/${activeQuestions.length}`;
+
+      quizContainer.innerHTML = `
+        <section class="result">
+          <h2>${score}/${activeQuestions.length}</h2>
+          <p>Tu porcentaje es <strong>${pct}%</strong>.</p>
+          <div class="footer-note">Tema activo: ${escapeHTML(currentTopic)}. Puedes mezclar o cambiar tema para volver a practicar.</div>
+          <div class="actions" style="justify-content:center; margin-top:14px;">
+            <button class="btn-primary" id="restartBtn">Reiniciar cuestionario</button>
+          </div>
+        </section>
+      `;
+
+      document.getElementById("restartBtn").addEventListener("click", () => {
+        current = 0;
+        score = 0;
+        answered = false;
+        if (activeQuestions.length === 0) {
+          showEmptyState();
+          return;
+        }
+        renderQuestion();
+      });
+    }
+
+    function showEmptyState() {
+      progressChip.textContent = "Sin preguntas";
+      scoreChip.textContent = "Puntaje: 0";
+      quizContainer.innerHTML = `
+        <section class="result">
+          <h2>0</h2>
+          <p>No hay preguntas para este filtro.</p>
+          <div class="footer-note">Cambia presentacion/tipo y pulsa "Aplicar filtro".</div>
+        </section>
+      `;
+    }
+
+    function shuffleArray(arr) {
+      const copy = [...arr];
+      for (let i = copy.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function loadTopics() {
+      const topics = ["Todas", "Presentacion 1", "Presentacion 2", "Presentacion 3"];
+      topicSelect.innerHTML = topics
+        .map((topic) => `<option value="${escapeHTML(topic)}">${escapeHTML(topic)}</option>`)
+        .join("");
+      topicSelect.value = "Todas";
+      typeSelect.value = "Todos";
+    }
+
+    function isExerciseQuestion(q) {
+      return Boolean(q.code) || q.topic.includes("Codigo Analitico");
+    }
+
+    function getPresentationByTopic(topic) {
+      const p1Topics = [
+        "Variables",
+        "Batches",
+        "Control de flujo",
+        "Manejo de errores",
+        "Sintaxis"
+      ];
+
+      const p2Topics = [
+        "Funciones - Conceptos",
+        "Funciones - Determinismo",
+        "Funciones de Agregacion",
+        "Funciones de Cadena",
+        "Funciones Logicas",
+        "Funciones de Fecha y Hora",
+        "Funciones de Conversion",
+        "Funciones del Sistema",
+        "Ranking (Window Functions)"
+      ];
+
+      const p3Topics = [
+        "UDF - Conceptos",
+        "UDF - Tipos",
+        "UDF Escalar",
+        "UDF Escalar - Codigo Analitico",
+        "UDF Inline TVF",
+        "UDF Inline TVF - Codigo Analitico",
+        "UDF Multi-statement TVF",
+        "UDF - Codigo Analitico",
+        "UDF - Matriz de Decision",
+        "Codigo Analitico - Identificar Error",
+        "Codigo Analitico - Completar",
+        "Codigo Analitico - UDF"
+      ];
+
+      if (p1Topics.includes(topic)) return "Presentacion 1";
+      if (p2Topics.includes(topic)) return "Presentacion 2";
+      if (p3Topics.includes(topic)) return "Presentacion 3";
+      return "Presentacion 3";
+    }
+
+    function applyTopicFilter() {
+      currentTopic = topicSelect.value;
+      const selectedType = typeSelect.value;
+
+      const byPresentation = currentTopic === "Todas"
+        ? [...allQuestions]
+        : allQuestions.filter((q) => getPresentationByTopic(q.topic) === currentTopic);
+
+      if (selectedType === "Todos") {
+        activeQuestions = byPresentation;
+      } else if (selectedType === "Ejercicios") {
+        activeQuestions = byPresentation.filter((q) => isExerciseQuestion(q));
+      } else {
+        activeQuestions = byPresentation.filter((q) => !isExerciseQuestion(q));
+      }
+
+      current = 0;
+      score = 0;
+      answered = false;
+
+      if (activeQuestions.length === 0) {
+        showEmptyState();
+        return;
+      }
+      renderQuestion();
+    }
+
+    function shuffleCurrentQuestions() {
+      if (activeQuestions.length === 0) {
+        showEmptyState();
+        return;
+      }
+
+      activeQuestions = shuffleArray(activeQuestions);
+      current = 0;
+      score = 0;
+      answered = false;
+      renderQuestion();
+    }
+
+    function resetAll() {
+      currentTopic = "Todas";
+      topicSelect.value = "Todas";
+      typeSelect.value = "Todos";
+      activeQuestions = [...allQuestions];
+      current = 0;
+      score = 0;
+      answered = false;
+      renderQuestion();
+    }
+
+    function escapeHTML(str) {
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    applyTopicBtn.addEventListener("click", applyTopicFilter);
+    shuffleBtn.addEventListener("click", shuffleCurrentQuestions);
+    resetAllBtn.addEventListener("click", resetAll);
+
+    loadTopics();
+    resetAll();
+  </script>
+</body>
+</html>
